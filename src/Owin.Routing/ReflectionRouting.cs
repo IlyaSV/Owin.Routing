@@ -43,7 +43,14 @@ namespace Owin.Routing
 			return routeBuilder.UseApi(init);			
 		}
 
-		private static MapRouteBuilder UseApi<T>(this MapRouteBuilder mapRouteBuilder, Func<IOwinContext, T> getInstance)
+		/// <summary>
+		/// Registers methods annotated with <see cref="RouteAttribute"/> into routing pipeline.
+		/// </summary>
+		/// <typeparam name="T">Type to reflect.</typeparam>
+		/// <param name="mapRouteBuilder">The fluent API to register http method handlers.</param>
+		/// <param name="getInstance">Function to get instance of T.</param>
+		/// <returns></returns>
+		public static MapRouteBuilder UseApi<T>(this MapRouteBuilder mapRouteBuilder, Func<IOwinContext, T> getInstance)
 		{
 			if (getInstance == null) throw new ArgumentNullException("getInstance");
 

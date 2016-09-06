@@ -12,8 +12,41 @@ namespace Owin.Routing
 	/// </summary>
 	public sealed class MapRouteBuilder
 	{
+		private class RoutePriorityComparer : IComparer<Route>
+		{
+			public int Compare(Route x, Route y)
+			{
+				var methodCompare = string.Compare(x.Method, y.Method, StringComparison.OrdinalIgnoreCase);
+				if (methodCompare != 0)
+					return methodCompare;
+
+				if (x.Segments.Length != y.Segments.Length)
+					return x.Segments.Length > y.Segments.Length ? 1 : -1;
+
+				for (int i = x.Segments.Length - 1; i >= 0; i--)
+				{
+					var xi = x.Segments[i]; 
+					var yi = y.Segments[i];
+
+					if (xi.IsVar && yi.IsVar)
+						continue;
+
+					if (xi.IsVar != yi.IsVar)
+						return xi.IsVar ? 1 : -1;
+
+					var nameCompare = string.Compare(xi.Name, yi.Name, StringComparison.OrdinalIgnoreCase);
+					if (nameCompare == 0)
+						continue;
+
+					return nameCompare;
+				}
+
+				return 0;
+			}
+		}
+
 		internal IAppBuilder App { get; private set; }
-		private readonly List<Route> _routes = new List<Route>();
+		private readonly SortedSet<Route> _routes = new SortedSet<Route>(new RoutePriorityComparer());
 
 		internal MapRouteBuilder(IAppBuilder app)
 		{
