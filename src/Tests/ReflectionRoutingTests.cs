@@ -94,6 +94,18 @@ namespace Tests
 			}
 		}
 
+		[TestCase("docs/items/count", Result = "\"items/count\"")]
+		[TestCase("docs/coll/count", Result = "\"{collection}/count\"")]
+		[TestCase("docs/items/identity", Result = "\"items/{id}\"")]
+		[TestCase("docs/coll/identity", Result = "\"{collection}/{id}\"")]
+		public async Task<string> ShouldUseMoreSpecific(string path)
+		{
+			using (var server = TestServer.Create(app => app.Route(r => r.UseApi<GenericCollectionsApi>().UseApi<ItemsCollectionApi>())))
+			{
+				return await server.HttpClient.GetStringAsync(path);
+			}			
+		}
+
 		public class AsyncApi
 		{
 			[Route("items/{key}")]
@@ -149,6 +161,39 @@ namespace Tests
 				public int? Value { get; set; }
 			}
 		}
+
+		[RoutePrefix("docs")]
+		private sealed class GenericCollectionsApi
+		{
+			[Route("{collection}/count")]
+			public string GetGenericCount()
+			{
+				return "{collection}/count";
+			}
+
+			[Route("{collection}/{id}")]
+			public string GetGenericItem()
+			{
+				return "{collection}/{id}";
+			}
+		}
+
+		[RoutePrefix("docs")]
+		private sealed class ItemsCollectionApi
+		{
+			[Route("items/count")]
+			public string GetSpecificCount()
+			{
+				return "items/count";
+			}
+
+			[Route("items/{id}")]
+			public string GetSpecificItem()
+			{
+				return "items/{id}";
+			}
+		}
+
 
 		public interface ILicenseManager
 		{
